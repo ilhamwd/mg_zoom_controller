@@ -1,3 +1,4 @@
+import 'package:mg_zoom_controller/mg_meeting_launch_status.dart';
 import 'package:mg_zoom_controller/mg_meeting_status.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -26,7 +27,7 @@ abstract class MgZoomControllerPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<bool> joinMeeting(
+  Future<MgMeetingLaunchStatus> joinMeeting(
       {required String displayName, required String link}) {
     throw UnimplementedError('joinMeeting() has not been implemented.');
   }
@@ -36,11 +37,13 @@ abstract class MgZoomControllerPlatform extends PlatformInterface {
   }
 
   Future<MgZoomMeetingStatus> get currentMeetingStatus {
-    throw UnimplementedError('Getter currentMeetingStatus has not been implemented.');
+    throw UnimplementedError(
+        'Getter currentMeetingStatus has not been implemented.');
   }
-  
+
   Future<bool> launchMeetingActivity() {
-   throw UnimplementedError("launchMeetingActivity() has not been implemented.");
+    throw UnimplementedError(
+        "launchMeetingActivity() has not been implemented.");
   }
 
   Stream<MgZoomMeetingStatus> get meetingStatus {

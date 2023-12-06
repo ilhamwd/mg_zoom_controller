@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:mg_zoom_controller/mg_meeting_launch_status.dart';
 import 'package:mg_zoom_controller/mg_meeting_status.dart';
 
 import 'mg_zoom_controller_platform_interface.dart';
@@ -13,23 +14,39 @@ class MethodChannelMgZoomController extends MgZoomControllerPlatform {
   final methodChannel = const MethodChannel('mg_zoom_controller');
 
   @override
-  Future<bool> joinMeeting(
+  Future<MgMeetingLaunchStatus> joinMeeting(
       {required String displayName, required String link}) async {
     try {
       late StreamSubscription<MgZoomMeetingStatus> meetingStatusSub;
-      meetingStatusSub = meetingStatus.listen((event) {
+      meetingStatusSub = meetingStatus.listen((event) async {
+        if (event == MgZoomMeetingStatus.disconnecting) {
+          await meetingStatusSub.cancel();
+        }
+
         if (event == MgZoomMeetingStatus.inMeeting) {
+          await meetingStatusSub.cancel();
           methodChannel.invokeMethod('launchMeetingActivity');
-          meetingStatusSub.cancel();
         }
       });
 
-      await methodChannel.invokeMethod(
+      final result = await methodChannel.invokeMethod(
           'joinMeeting', {"link": link, "display_name": displayName});
 
-      return true;
+      if (result != "success") {
+        meetingStatusSub.cancel();
+      }
+
+      switch (result) {
+        case "success":
+          return MgMeetingLaunchStatus.success;
+        case "uninitialized":
+          return MgMeetingLaunchStatus.uninitialized;
+        case "failed":
+        default:
+          throw 1;
+      }
     } catch (e) {
-      return false;
+      return MgMeetingLaunchStatus.failed;
     }
   }
 

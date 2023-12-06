@@ -37,12 +37,12 @@ class MgZoomControllerPlugin : FlutterPlugin, MethodCallHandler {
         Log.e("MethodName", call.method)
 
         when (call.method) {
-            "joinMeeting" -> {
-                zoomHelpers.joinMeeting(
-                    call.argument<String>("link")!!, call.argument<String>("display_name")!!
+            "joinMeeting" ->
+                result.success(
+                    zoomHelpers.joinMeeting(
+                        call.argument<String>("link")!!, call.argument<String>("display_name")!!
+                    )
                 )
-                result.success("1")
-            }
 
             "getCurrentMeetingStatus" -> {
                 val sdk = ZoomSDK.getInstance()
@@ -64,6 +64,6 @@ class MgZoomControllerPlugin : FlutterPlugin, MethodCallHandler {
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
 
-        ZoomSDK.getInstance().meetingService.leaveCurrentMeeting(true)
+        ZoomSDK.getInstance().uninitialize()
     }
 }

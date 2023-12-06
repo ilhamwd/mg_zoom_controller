@@ -1,3 +1,4 @@
+import 'package:mg_zoom_controller/mg_meeting_launch_status.dart';
 import 'package:mg_zoom_controller/mg_meeting_status.dart';
 
 import 'mg_zoom_controller_platform_interface.dart';
@@ -5,7 +6,7 @@ import 'mg_zoom_controller_platform_interface.dart';
 export 'mg_meeting_status.dart';
 
 abstract class MgZoomController {
-  static Future<bool> joinMeeting({
+  static Future<MgMeetingLaunchStatus> joinMeeting({
     required String link,
     required String displayName,
   }) =>
