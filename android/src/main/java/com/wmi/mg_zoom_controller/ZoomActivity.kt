@@ -6,6 +6,7 @@ import android.content.Intent
 import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.util.Rational
 import android.view.KeyEvent
 import android.view.View
@@ -152,7 +153,7 @@ class ZoomActivity : AppCompatActivity() {
         }
 
         updateWindowMode()
-        initiateMeetingControlsStatus()
+        updateMeetingControlsStatus()
         initiateSpeakerVideo()
         initiateCameraPreview()
         updateZoomGrid()
@@ -255,7 +256,7 @@ class ZoomActivity : AppCompatActivity() {
     private fun initiateCameraPreview() {
     }
 
-    private fun initiateMeetingControlsStatus() {
+    private fun updateMeetingControlsStatus() {
         with(ZoomSDK.getInstance().inMeetingService.inMeetingAudioController) {
             btnToggleMic.setImageResource(if (isMyAudioMuted) R.drawable.zm_btn_unmute_audio_normal else R.drawable.zm_btn_mute_audio_normal)
             btnToggleMic.setOnClickListener {
@@ -303,6 +304,14 @@ class ZoomActivity : AppCompatActivity() {
 
                 btnToggleShare.setOnClickListener {
                     if (!isSharingScreen) {
+                        if (isOtherSharing) {
+                            return@setOnClickListener Toast.makeText(
+                                this@ZoomActivity,
+                                "Cannot share while the other is sharing their screen",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+
                         val manager =
                             getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
                         val intent = manager.createScreenCaptureIntent()
@@ -457,12 +466,13 @@ class ZoomActivity : AppCompatActivity() {
         }
 
         override fun onSharingStatus(p0: SharingStatus?, p1: Long) {
+            updateMeetingControlsStatus()
         }
 
         override fun onShareUserReceivingStatus(p0: Long) {}
 
         override fun onShareSettingTypeChanged(p0: ShareSettingType?) {
-            initiateMeetingControlsStatus()
+            updateMeetingControlsStatus()
         }
     }
 
