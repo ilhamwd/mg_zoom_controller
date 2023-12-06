@@ -6,7 +6,6 @@ import android.content.Intent
 import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.util.Rational
 import android.view.KeyEvent
 import android.view.View
@@ -20,6 +19,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.os.BuildCompat
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.SnackbarLayout
 import us.zoom.sdk.ChatMessageDeleteType
@@ -37,6 +37,7 @@ import us.zoom.sdk.SharingStatus
 import us.zoom.sdk.ZoomSDK
 
 
+@BuildCompat.PrereleaseSdkCheck
 class ZoomActivity : AppCompatActivity() {
     private val zoomSDK = ZoomSDK.getInstance()
     private lateinit var chatCacheManager: ZoomChatCacheManager
@@ -52,6 +53,8 @@ class ZoomActivity : AppCompatActivity() {
     private lateinit var zoomPiPModeLayout: RelativeLayout
     private lateinit var participantsGridContainer: LinearLayout
     private lateinit var myVideoContainer: RelativeLayout
+    private lateinit var newChatBubbleContainer: RelativeLayout
+    private lateinit var newChatBubbleTextView: TextView
 
     // Meeting controls
     private lateinit var btnToggleMic: ImageView
@@ -65,8 +68,11 @@ class ZoomActivity : AppCompatActivity() {
     private val meetingListener = ActivityMeetingListener()
 
     private var speakerId: Long? = null
+    private var shouldListenToNewChats = true
+    private var newChatsCount = 0
 
-    private lateinit var resultLauncher: ActivityResultLauncher<Intent>
+    private lateinit var shareResultLauncher: ActivityResultLauncher<Intent>
+    private lateinit var chatScreenResultLauncher: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,6 +99,8 @@ class ZoomActivity : AppCompatActivity() {
         btnToggleVideo = findViewById(R.id.btnToggleVideo)
         btnToggleShare = findViewById(R.id.btnToggleShare)
         btnChats = findViewById(R.id.btnChats)
+        newChatBubbleContainer = findViewById(R.id.newChatBubbleContainer)
+        newChatBubbleTextView = findViewById(R.id.newChatBubbleTextView)
 
         myVideoRtc.videoViewManager.addPreviewVideoUnit(
             MobileRTCVideoUnitRenderInfo(
@@ -110,11 +118,13 @@ class ZoomActivity : AppCompatActivity() {
         }
 
         btnChats.setOnClickListener {
+            shouldListenToNewChats = false
+            newChatsCount = 0
+            newChatBubbleContainer.visibility = View.GONE
+
             val intent = Intent(this, ChatsActivity::class.java)
 
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-
-            startActivity(intent)
+            chatScreenResultLauncher.launch(intent)
         }
 
         btnMinimize.setOnClickListener {
@@ -159,7 +169,7 @@ class ZoomActivity : AppCompatActivity() {
         updateZoomGrid()
         updateMainStageView()
 
-        resultLauncher =
+        shareResultLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
                 if (result.resultCode == Activity.RESULT_OK) {
                     val data = result.data
@@ -170,8 +180,13 @@ class ZoomActivity : AppCompatActivity() {
                     }
                 }
             }
+        chatScreenResultLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                if (it.resultCode == ChatsActivity.RESULT_CAN_LISTEN) {
+                    shouldListenToNewChats = true
+                }
+            }
     }
-
     private fun updateWindowMode() {
         if (isInPictureInPictureMode) {
             zoomPiPModeLayout.visibility = View.VISIBLE
@@ -320,7 +335,7 @@ class ZoomActivity : AppCompatActivity() {
                             getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
                         val intent = manager.createScreenCaptureIntent()
 
-                        resultLauncher.launch(intent)
+                        shareResultLauncher.launch(intent)
                     } else {
                         stopShareScreen()
                     }
@@ -424,6 +439,13 @@ class ZoomActivity : AppCompatActivity() {
             if (p0 == null) return
 
             chatCacheManager.write(p0)
+
+            if (!shouldListenToNewChats) return
+
+            newChatsCount++
+
+            newChatBubbleContainer.visibility = View.VISIBLE
+            newChatBubbleTextView.text = newChatsCount.toString()
 
             val layout = layoutInflater.inflate(R.layout.chat_item, null)
             val snackBar = Snackbar.make(

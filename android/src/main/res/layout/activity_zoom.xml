@@ -17,11 +17,6 @@
             android:layout_height="match_parent"
             android:visibility="gone" />
 
-        <us.zoom.sdk.MobileRTCVideoView
-            android:id="@+id/zoomPiPModeShareRtc"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone" />
     </RelativeLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -99,6 +94,12 @@
                     android:layout_weight="1" />
 
                 <us.zoom.sdk.MobileRTCVideoView
+                    android:id="@+id/zoomPiPModeShareRtc"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone" />
+
+                <us.zoom.sdk.MobileRTCVideoView
                     android:id="@+id/zoomFullScreenModeShareRtc"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
@@ -170,13 +171,40 @@
                     android:paddingHorizontal="25dp"
                     android:src="@drawable/zm_btn_share" />
 
-                <ImageView
-                    android:id="@+id/btnChats"
+                <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:paddingHorizontal="25dp"
-                    android:src="@drawable/zm_btn_chats_normal" />
+                    android:layout_weight="1">
+
+                    <ImageView
+                        android:id="@+id/btnChats"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:paddingHorizontal="25dp"
+                        android:src="@drawable/zm_btn_chats_normal" />
+
+                    <RelativeLayout
+                        android:id="@+id/newChatBubbleContainer"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_alignParentTop="false"
+                        android:layout_marginLeft="35dp"
+                        android:layout_marginBottom="10dp"
+                        android:background="@drawable/meeting_widget_rounded_bg"
+                        android:backgroundTint="@android:color/holo_red_dark"
+                        android:padding="3dp"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/newChatBubbleTextView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:text="33"
+                            android:textColor="@color/white"
+                            android:textSize="8dp" />
+                    </RelativeLayout>
+                </RelativeLayout>
 
                 <ImageView
                     android:id="@+id/btnLeave"

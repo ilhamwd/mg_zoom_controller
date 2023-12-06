@@ -1,9 +1,13 @@
 package com.wmi.mg_zoom_controller
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
 import android.os.Bundle
 import android.widget.EditText
 import android.widget.ImageView
+import android.window.OnBackInvokedDispatcher
+import androidx.activity.addCallback
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.BuildCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import us.zoom.sdk.InMeetingChatController
@@ -14,15 +18,20 @@ import us.zoom.sdk.MeetingServiceListener
 import us.zoom.sdk.MeetingStatus
 import us.zoom.sdk.ZoomSDK
 
-class ChatsActivity : AppCompatActivity() {
+@BuildCompat.PrereleaseSdkCheck class ChatsActivity : AppCompatActivity() {
     private lateinit var inMeetingListener: InMeetingServiceListener
     private lateinit var meetingListener: MeetingServiceListener
+
+    companion object {
+        const val RESULT_CAN_LISTEN = 1
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chats)
 
         val sdk = ZoomSDK.getInstance()
+        val btnExit = findViewById<ImageView>(R.id.btnExit)
         val chatCacheManager = ZoomChatCacheManager(this)
         val btnSend = findViewById<ImageView>(R.id.btnSend)
         val messageTextBox = findViewById<EditText>(R.id.messageTextBox)
@@ -49,6 +58,10 @@ class ChatsActivity : AppCompatActivity() {
             override fun onMeetingParameterNotification(p0: MeetingParameter?) {}
         }
 
+        btnExit.setOnClickListener {
+            exit()
+        }
+
         btnSend.setOnClickListener {
             if (messageTextBox.text.isBlank()) return@setOnClickListener
 
@@ -59,11 +72,33 @@ class ChatsActivity : AppCompatActivity() {
             messageTextBox.text.clear()
         }
 
+        if (BuildCompat.isAtLeastT()) {
+            onBackInvokedDispatcher.registerOnBackInvokedCallback(
+                OnBackInvokedDispatcher.PRIORITY_DEFAULT
+            ) {
+                exit()
+            }
+        } else {
+            onBackPressedDispatcher.addCallback(this /* lifecycle owner */) {
+                exit()
+            }
+        }
         chatList.layoutManager = LinearLayoutManager(this)
         chatList.adapter = chatAdapter
 
         sdk.inMeetingService.addListener(inMeetingListener)
         sdk.meetingService.addListener(meetingListener)
+    }
+
+    override fun onBackPressed() {
+        exit()
+        super.onBackPressed()
+    }
+    private fun exit() {
+        val intent = Intent()
+
+        setResult(RESULT_CAN_LISTEN, intent)
+        finish()
     }
 
     override fun onDestroy() {

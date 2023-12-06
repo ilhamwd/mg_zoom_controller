@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.annotation.NonNull
+import androidx.core.os.BuildCompat
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 
@@ -17,7 +18,7 @@ import us.zoom.sdk.MeetingStatus
 import us.zoom.sdk.ZoomSDK
 import java.util.Date
 
-/** MgZoomControllerPlugin */
+@BuildCompat.PrereleaseSdkCheck /** MgZoomControllerPlugin */
 class MgZoomControllerPlugin : FlutterPlugin, MethodCallHandler {
     private lateinit var channel: MethodChannel
     private lateinit var context: Context

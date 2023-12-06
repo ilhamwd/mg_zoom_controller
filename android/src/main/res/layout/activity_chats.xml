@@ -20,7 +20,7 @@
             android:padding="10dp">
 
             <ImageView
-                android:id="@+id/btnMinimize"
+                android:id="@+id/btnExit"
                 android:layout_width="30dp"
                 android:layout_height="wrap_content"
                 android:src="@drawable/icon_title_bar_minimize"
@@ -36,7 +36,7 @@
                 android:text="Chats"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/btnMinimize"
+                app:layout_constraintStart_toEndOf="@+id/btnExit"
                 app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.appbar.AppBarLayout>
