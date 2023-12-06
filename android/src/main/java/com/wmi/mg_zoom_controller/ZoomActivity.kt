@@ -202,6 +202,10 @@ class ZoomActivity : AppCompatActivity() {
         enterPictureInPictureMode(params)
     }
 
+    override fun onUserLeaveHint() {
+        enterPiPMode()
+    }
+
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return if (keyCode == KeyEvent.KEYCODE_BACK) {
             enterPiPMode()
@@ -387,7 +391,6 @@ class ZoomActivity : AppCompatActivity() {
         override fun onMeetingStatusChanged(p0: MeetingStatus?, p1: Int, p2: Int) {
             if (p0 == MeetingStatus.MEETING_STATUS_DISCONNECTING) {
                 finish()
-                chatCacheManager.clean()
             }
         }
 
