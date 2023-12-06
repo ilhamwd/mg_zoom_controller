@@ -105,6 +105,10 @@ class ZoomHelpers(context: Context, binaryMessenger: BinaryMessenger) {
     inner class MeetingListener : MeetingServiceListener {
         override fun onMeetingStatusChanged(p0: MeetingStatus?, p1: Int, p2: Int) {
             try {
+                if (p0 == MeetingStatus.MEETING_STATUS_DISCONNECTING) {
+                    ZoomChatCacheManager(context).clean()
+                }
+
                 meetingStatusSink?.success(p0?.name)
             } catch (e: Exception) {
                 Log.e(

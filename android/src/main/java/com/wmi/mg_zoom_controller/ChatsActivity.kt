@@ -41,7 +41,9 @@ class ChatsActivity : AppCompatActivity() {
         }
         meetingListener = object : MeetingServiceListener {
             override fun onMeetingStatusChanged(p0: MeetingStatus?, p1: Int, p2: Int) {
-                if (p0 == MeetingStatus.MEETING_STATUS_DISCONNECTING) finish()
+                if (p0 == MeetingStatus.MEETING_STATUS_DISCONNECTING) {
+                    finish()
+                }
             }
 
             override fun onMeetingParameterNotification(p0: MeetingParameter?) {}

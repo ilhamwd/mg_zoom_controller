@@ -64,6 +64,7 @@ class MgZoomControllerPlugin : FlutterPlugin, MethodCallHandler {
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
 
+        ZoomChatCacheManager(binding.applicationContext).clean()
         ZoomSDK.getInstance().uninitialize()
     }
 }
