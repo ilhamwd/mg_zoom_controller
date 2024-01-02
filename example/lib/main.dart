@@ -46,9 +46,30 @@ class _MyAppState extends State<MyApp> {
                       onPressed: () {
                         MgZoomController.launchMeetingActivity();
                       },
-                      child: const Text("Open activity"))
+                      child: const Text("Open activity")),
                 ],
               ),
+            ),
+            Row(
+              children: [
+                ElevatedButton(
+                    onPressed: () {
+                      MgZoomController.volumeDown();
+                    },
+                    child: const Text("-")),
+                const SizedBox(width: 15),
+                ElevatedButton(
+                    onPressed: () {
+                      MgZoomController.volumeUp();
+                    },
+                    child: const Text("+")),
+                const SizedBox(width: 15),
+                ElevatedButton(
+                    onPressed: () {
+                      MgZoomController.toggleSpeakerMute();
+                    },
+                    child: const Text("Toggle Mute")),
+              ],
             ),
             const SizedBox(height: 10),
             StreamBuilder(

@@ -46,6 +46,18 @@ abstract class MgZoomControllerPlatform extends PlatformInterface {
         "launchMeetingActivity() has not been implemented.");
   }
 
+  Future<bool> volumeUp() {
+    throw UnimplementedError("volumeUp() has not been implemented.");
+  }
+
+  Future<bool> volumeDown() {
+    throw UnimplementedError("volumeDown() has not been implemented.");
+  }
+
+  Future<bool> toggleSpeakerMute() {
+    throw UnimplementedError("toggleSpeakerMute() has not been implemented.");
+  }
+
   Stream<MgZoomMeetingStatus> get meetingStatus {
     throw UnimplementedError('Getter meetingStatus has not been implemented.');
   }

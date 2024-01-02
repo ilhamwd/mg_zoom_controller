@@ -22,5 +22,15 @@ abstract class MgZoomController {
   static Future<MgZoomMeetingStatus> get currentMeetingStatus =>
       MgZoomControllerPlatform.instance.currentMeetingStatus;
 
-  static Future<bool> launchMeetingActivity() => MgZoomControllerPlatform.instance.launchMeetingActivity();
+  static Future<bool> launchMeetingActivity() =>
+      MgZoomControllerPlatform.instance.launchMeetingActivity();
+
+  static Future<bool> volumeUp() =>
+      MgZoomControllerPlatform.instance.volumeUp();
+
+  static Future<bool> volumeDown() =>
+      MgZoomControllerPlatform.instance.volumeDown();
+
+  static Future<bool> toggleSpeakerMute() =>
+      MgZoomControllerPlatform.instance.toggleSpeakerMute();
 }

@@ -95,6 +95,39 @@ class MethodChannelMgZoomController extends MgZoomControllerPlatform {
     return _parseMeetingStatus(rawStatus);
   }
 
+  @override
+  Future<bool> volumeUp() async {
+    try {
+      await methodChannel.invokeMethod("volumeUp");
+
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> volumeDown() async {
+    try {
+      await methodChannel.invokeMethod("volumeDown");
+
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> toggleSpeakerMute() async {
+    try {
+      await methodChannel.invokeMethod("toggleSpeakerMute");
+
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   MgZoomMeetingStatus _parseMeetingStatus(event) {
     var status = MgZoomMeetingStatus.idle;
 

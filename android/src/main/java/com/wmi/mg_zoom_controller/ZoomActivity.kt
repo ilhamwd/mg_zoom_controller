@@ -522,8 +522,6 @@ class ZoomActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
 
-        Log.d("ZoomActivityStatus", "Finishedd")
-
         with(zoomSDK) {
             inMeetingService.removeListener(inMeetingListener)
             meetingService.removeListener(meetingListener)
