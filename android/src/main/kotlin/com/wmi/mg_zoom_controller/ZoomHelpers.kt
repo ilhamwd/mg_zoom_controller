@@ -26,9 +26,8 @@ import java.util.Date
 import java.util.TimerTask
 import java.util.logging.StreamHandler
 
-class ZoomHelpers(context: Context, binaryMessenger: BinaryMessenger) {
+class ZoomHelpers(private val context: Context, binaryMessenger: BinaryMessenger) {
     private var isInitialized = false
-    private val context = context
     private val meetingStatusEventChannel = EventChannel(binaryMessenger, "mg/zoom_meeting_status")
     private var meetingStatusSink: EventChannel.EventSink? = null
 

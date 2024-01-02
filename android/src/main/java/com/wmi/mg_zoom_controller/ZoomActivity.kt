@@ -2,10 +2,13 @@ package com.wmi.mg_zoom_controller
 
 import android.app.Activity
 import android.app.PictureInPictureParams
+import android.app.PictureInPictureUiState
 import android.content.Intent
+import android.content.res.Configuration
 import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.util.Rational
 import android.view.KeyEvent
 import android.view.View
@@ -20,6 +23,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.os.BuildCompat
+import androidx.lifecycle.Lifecycle
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.SnackbarLayout
 import us.zoom.sdk.ChatMessageDeleteType
@@ -103,15 +107,15 @@ class ZoomActivity : AppCompatActivity() {
         newChatBubbleTextView = findViewById(R.id.newChatBubbleTextView)
 
         myVideoRtc.videoViewManager.addPreviewVideoUnit(
-            MobileRTCVideoUnitRenderInfo(
-                0,
-                0,
-                100,
-                100
-            ).apply {
-                corner_radius = 20
-                aspect_mode = MobileRTCVideoUnitAspectMode.VIDEO_ASPECT_PAN_AND_SCAN
-            })
+                MobileRTCVideoUnitRenderInfo(
+                        0,
+                        0,
+                        100,
+                        100
+                ).apply {
+                    corner_radius = 20
+                    aspect_mode = MobileRTCVideoUnitAspectMode.VIDEO_ASPECT_PAN_AND_SCAN
+                })
 
         if (zoomSDK.inMeetingService.inMeetingVideoController.isMyVideoMuted) {
             myVideoContainer.visibility = View.GONE
@@ -139,15 +143,15 @@ class ZoomActivity : AppCompatActivity() {
             myVideoRtc.videoViewManager.removeAllVideoUnits()
             zoomSDK.inMeetingService.inMeetingVideoController.switchToNextCamera()
             myVideoRtc.videoViewManager.addPreviewVideoUnit(
-                MobileRTCVideoUnitRenderInfo(
-                    0,
-                    0,
-                    100,
-                    100
-                ).apply {
-                    corner_radius = 20
-                    aspect_mode = MobileRTCVideoUnitAspectMode.VIDEO_ASPECT_PAN_AND_SCAN
-                })
+                    MobileRTCVideoUnitRenderInfo(
+                            0,
+                            0,
+                            100,
+                            100
+                    ).apply {
+                        corner_radius = 20
+                        aspect_mode = MobileRTCVideoUnitAspectMode.VIDEO_ASPECT_PAN_AND_SCAN
+                    })
         }
 
         with(zoomSDK) {
@@ -170,23 +174,24 @@ class ZoomActivity : AppCompatActivity() {
         updateMainStageView()
 
         shareResultLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == Activity.RESULT_OK) {
-                    val data = result.data
+                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                    if (result.resultCode == Activity.RESULT_OK) {
+                        val data = result.data
 
-                    with(zoomSDK.inMeetingService.inMeetingShareController) {
-                        startShareScreenSession(data)
-                        startShareScreenContent()
+                        with(zoomSDK.inMeetingService.inMeetingShareController) {
+                            startShareScreenSession(data)
+                            startShareScreenContent()
+                        }
                     }
                 }
-            }
         chatScreenResultLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                if (it.resultCode == ChatsActivity.RESULT_CAN_LISTEN) {
-                    shouldListenToNewChats = true
+                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                    if (it.resultCode == ChatsActivity.RESULT_CAN_LISTEN) {
+                        shouldListenToNewChats = true
+                    }
                 }
-            }
     }
+
     private fun updateWindowMode() {
         if (isInPictureInPictureMode) {
             zoomPiPModeLayout.visibility = View.VISIBLE
@@ -208,7 +213,8 @@ class ZoomActivity : AppCompatActivity() {
     }
 
     private fun getMeetingParticipants(): List<Long> {
-        return zoomSDK.inMeetingService.inMeetingUserList.filter { it != zoomSDK.inMeetingService.myUserID }
+        return zoomSDK.inMeetingService.inMeetingUserList?.filter { it != zoomSDK.inMeetingService.myUserID }
+                ?: listOf()
     }
 
     private fun enterPiPMode() {
@@ -221,6 +227,12 @@ class ZoomActivity : AppCompatActivity() {
         enterPiPMode()
     }
 
+    override fun onPause() {
+        if (isDestroyed) return
+
+        super.onPause()
+    }
+
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return if (keyCode == KeyEvent.KEYCODE_BACK) {
             enterPiPMode()
@@ -229,11 +241,17 @@ class ZoomActivity : AppCompatActivity() {
         } else super.onKeyDown(keyCode, event)
     }
 
+    override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean, newConfig: Configuration) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+
+        if (lifecycle.currentState == Lifecycle.State.CREATED) finish()
+    }
+
     // Grid of 3 participants
     fun updateZoomGrid(participants: List<Long>? = null) {
         val shareController = zoomSDK.inMeetingService.inMeetingShareController
         val isSharingScreen =
-            shareController.isOtherSharing || shareController.isSharingScreen || shareController.isSharingOut
+                shareController.isOtherSharing || shareController.isSharingScreen || shareController.isSharingOut
         var updatedParticipants = participants ?: getMeetingParticipants()
 
         if (updatedParticipants.size > 3) {
@@ -257,7 +275,7 @@ class ZoomActivity : AppCompatActivity() {
             if (participant == speakerId && !isSharingScreen) continue
 
             val rtcContainer = layoutInflater.inflate(
-                R.layout.participant_zoom_tile, participantsGridContainer, false
+                    R.layout.participant_zoom_tile, participantsGridContainer, false
             )
             val rtc = rtcContainer.findViewById<MobileRTCVideoView>(R.id.zoomTileRtc)
             val userNameView = rtcContainer.findViewById<TextView>(R.id.zoomTileUserName)
@@ -265,7 +283,7 @@ class ZoomActivity : AppCompatActivity() {
             userNameView.text = zoomSDK.inMeetingService.getUserInfoById(participant).userName
 
             rtc.videoViewManager.addAttendeeVideoUnit(participant,
-                MobileRTCVideoUnitRenderInfo(0, 0, 100, 100).apply { corner_radius = 20 })
+                    MobileRTCVideoUnitRenderInfo(0, 0, 100, 100).apply { corner_radius = 20 })
 
             participantsGridContainer.addView(rtcContainer)
         }
@@ -315,7 +333,7 @@ class ZoomActivity : AppCompatActivity() {
                 btnToggleShare.alpha = .5F
                 btnToggleShare.setOnClickListener {
                     Toast.makeText(
-                        this@ZoomActivity, "Host disabled the share screen", Toast.LENGTH_LONG
+                            this@ZoomActivity, "Host disabled the share screen", Toast.LENGTH_LONG
                     ).show()
                 }
             } else {
@@ -325,14 +343,14 @@ class ZoomActivity : AppCompatActivity() {
                     if (!isSharingScreen) {
                         if (isOtherSharing) {
                             return@setOnClickListener Toast.makeText(
-                                this@ZoomActivity,
-                                "Cannot share while the other is sharing their screen",
-                                Toast.LENGTH_LONG
+                                    this@ZoomActivity,
+                                    "Cannot share while the other is sharing their screen",
+                                    Toast.LENGTH_LONG
                             ).show()
                         }
 
                         val manager =
-                            getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                                getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
                         val intent = manager.createScreenCaptureIntent()
 
                         shareResultLauncher.launch(intent)
@@ -348,7 +366,7 @@ class ZoomActivity : AppCompatActivity() {
     private fun initiateSpeakerVideo() {
         val participants = getMeetingParticipants()
 
-        speakerId = if (participants.isNotEmpty()) {
+        speakerId = if (participants!!.isNotEmpty()) {
             participants[0]
         } else {
             zoomSDK.inMeetingService.myUserID
@@ -365,10 +383,10 @@ class ZoomActivity : AppCompatActivity() {
         }
 
         zoomFullScreenModeVideoRtc.videoViewManager.addAttendeeVideoUnit(
-            userId, videoUnit
+                userId, videoUnit
         )
         zoomPiPModeVideoRtc.videoViewManager.addAttendeeVideoUnit(
-            userId, videoUnit
+                userId, videoUnit
         )
     }
 
@@ -415,7 +433,7 @@ class ZoomActivity : AppCompatActivity() {
     }
 
     inner class InMeetingListener() :
-        SimplifiedInMeetingServiceListener() {
+            SimplifiedInMeetingServiceListener() {
         override fun onMeetingUserJoin(p0: MutableList<Long>?) {
             updateZoomGrid()
         }
@@ -449,9 +467,9 @@ class ZoomActivity : AppCompatActivity() {
 
             val layout = layoutInflater.inflate(R.layout.chat_item, null)
             val snackBar = Snackbar.make(
-                findViewById<View>(android.R.id.content).rootView,
-                "",
-                Snackbar.LENGTH_LONG
+                    findViewById<View>(android.R.id.content).rootView,
+                    "",
+                    Snackbar.LENGTH_LONG
             )
             val snackBarLayout = snackBar.view as SnackbarLayout
             val viewHolder = ZoomChatListAdapter.ZoomChatListViewHolder(layout)
@@ -503,6 +521,8 @@ class ZoomActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+
+        Log.d("ZoomActivityStatus", "Finishedd")
 
         with(zoomSDK) {
             inMeetingService.removeListener(inMeetingListener)
