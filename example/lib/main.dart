@@ -14,8 +14,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final _mgZoomControllerPlugin = MgZoomController();
-
   @override
   Widget build(BuildContext context) {
     const link =
@@ -29,22 +27,32 @@ class _MyAppState extends State<MyApp> {
         body: Column(
           children: [
             Center(
-              child: ElevatedButton(
-                  onPressed: () async {
-                    final currentMeetingStatus =
-                        await _mgZoomControllerPlugin.currentMeetingStatus;
-                    if (currentMeetingStatus == MgZoomMeetingStatus.idle) {
-                      _mgZoomControllerPlugin.joinMeeting(
-                          link: link, displayName: "Qwertyuiop");
-                    } else {
-                      _mgZoomControllerPlugin.leaveMeeting();
-                    }
-                  },
-                  child: const Text("Launch")),
+              child: Row(
+                children: [
+                  ElevatedButton(
+                      onPressed: () async {
+                        final currentMeetingStatus =
+                            await MgZoomController.currentMeetingStatus;
+                        if (currentMeetingStatus == MgZoomMeetingStatus.idle) {
+                          MgZoomController.joinMeeting(
+                              link: link, displayName: "Qwertyuiop");
+                        } else {
+                          MgZoomController.leaveMeeting();
+                        }
+                      },
+                      child: const Text("Launch")),
+                  const SizedBox(width: 15),
+                  ElevatedButton(
+                      onPressed: () {
+                        MgZoomController.launchMeetingActivity();
+                      },
+                      child: const Text("Open activity"))
+                ],
+              ),
             ),
             const SizedBox(height: 10),
             StreamBuilder(
-                stream: _mgZoomControllerPlugin.meetingStatus,
+                stream: MgZoomController.meetingStatus,
                 builder: (context, snapshot) {
                   return Text(snapshot.data.toString());
                 })
